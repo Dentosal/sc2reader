@@ -25,7 +25,13 @@ class MessageEvent(Event):
         self.name = self.__class__.__name__
 
     def _str_prefix(self):
-        player_name = self.player.name if getattr(self, 'pid', 16) != 16 else "Global"
+        if getattr(self, 'pid', 16) != 16:
+            if hasattr(self, 'player'):
+                player_name = self.player.name
+            else:
+                player_name = 'NoPlayer'
+        else:
+            player_name =  'Global'
         return "{0}\t{1:<15} ".format(Length(seconds=int(self.frame / 16)), player_name)
 
     def __str__(self):

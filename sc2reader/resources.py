@@ -360,23 +360,32 @@ class Replay(Resource):
             return
 
         self.map_name = details['map_name']
-        self.region = details['cache_handles'][0].server.lower()
-        self.map_hash = details['cache_handles'][-1].hash
-        self.map_file = details['cache_handles'][-1]
 
-        # Expand this special case mapping
-        if self.region == 'sg':
-            self.region = 'sea'
-
-        dependency_hashes = [d.hash for d in details['cache_handles']]
-        if hashlib.sha256('Standard Data: Void.SC2Mod'.encode('utf8')).hexdigest() in dependency_hashes:
+        if not details['cache_handles']:
+            # Produced by Linux SC2 API
+            self.region = None
+            self.map_hash = None
+            self.map_file = "StarCraftII/Maps/" + details["map_file_name"]
             self.expansion = 'LotV'
-        elif hashlib.sha256('Standard Data: Swarm.SC2Mod'.encode('utf8')).hexdigest() in dependency_hashes:
-            self.expansion = 'HotS'
-        elif hashlib.sha256('Standard Data: Liberty.SC2Mod'.encode('utf8')).hexdigest() in dependency_hashes:
-            self.expansion = 'WoL'
+            self.speed = 'Faster'
         else:
-            self.expansion = ''
+            self.region = details['cache_handles'][0].server.lower()
+            self.map_hash = details['cache_handles'][-1].hash
+            self.map_file = details['cache_handles'][-1]
+
+            # Expand this special case mapping
+            if self.region == 'sg':
+                self.region = 'sea'
+
+            dependency_hashes = [d.hash for d in details['cache_handles']]
+            if hashlib.sha256('Standard Data: Void.SC2Mod'.encode('utf8')).hexdigest() in dependency_hashes:
+                self.expansion = 'LotV'
+            elif hashlib.sha256('Standard Data: Swarm.SC2Mod'.encode('utf8')).hexdigest() in dependency_hashes:
+                self.expansion = 'HotS'
+            elif hashlib.sha256('Standard Data: Liberty.SC2Mod'.encode('utf8')).hexdigest() in dependency_hashes:
+                self.expansion = 'WoL'
+            else:
+                self.expansion = ''
 
         self.windows_timestamp = details['file_time']
         self.unix_timestamp = utils.windows_to_unix(self.windows_timestamp)
